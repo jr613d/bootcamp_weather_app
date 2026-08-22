@@ -18,7 +18,29 @@ from dotenv import load_dotenv
 
 # Load OPENWEATHER_API_KEY from the local .env file (never commit this file/key)
 load_dotenv()
-API_KEY = os.getenv("OPENWEATHER_API_KEY")
+
+
+def get_api_key():
+    """
+    Get the API key two different ways, depending on where this app is running:
+    - Locally: from the .env file, via os.getenv()
+    - On Streamlit Community Cloud: from the app's "Secrets" settings, via st.secrets
+      (Streamlit Cloud has no access to our local .env file, since it's git-ignored
+      and never gets pushed to GitHub)
+    """
+    key = os.getenv("OPENWEATHER_API_KEY")
+    if key:
+        return key
+
+    # st.secrets raises an error if no secrets have been configured at all,
+    # so we catch that and just treat it the same as "no key found."
+    try:
+        return st.secrets["OPENWEATHER_API_KEY"]
+    except Exception:
+        return None
+
+
+API_KEY = get_api_key()
 
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
